@@ -1,0 +1,43 @@
+<div id="map"></div>
+<div class="button-container">
+    <a href="/" class="btn btn-secondary">Назад</a>
+</div>
+
+
+
+
+<script src="https://api-maps.yandex.ru/2.1/?apikey=ad6de3ca-b0ff-402f-9c98-678f49588a8e&lang=ru_RU" type="text/javascript"></script>
+<script>
+    ymaps.ready(init);
+
+    function init() {
+        var myMap = new ymaps.Map("map", {
+            center: [55.751574, 37.573856], // Координаты центра карты (Москва)
+            zoom: 10 // Масштаб карты
+        });
+
+        // Массив с координатами точек
+        var points = JSON.parse("{{coords}}")
+
+        points.forEach(point => {
+            var placemark = new ymaps.Placemark(point, {}, {
+                preset: 'islands#blueIcon' // Стиль метки
+            });
+            myMap.geoObjects.add(placemark);
+        });
+    }
+</script>
+
+<style>
+    #map {
+        width: 99vw;
+        height: 75vh;
+    }
+
+    .button-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+</style>

@@ -1,0 +1,61 @@
+
+<div class="content">
+    <div class="container">
+        <div class="login-form">
+            <h3 class="text-center">Вход</h3>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="login">Логин:</label>
+                    <input type="text" class="form-control" id="login" placeholder="Введите логин">
+                </div>
+                <div class="form-group">
+                    <label for="password">Пароль:</label>
+                    <input type="password" class="form-control" id="password" placeholder="Введите пароль">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Войти</button>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+document.getElementById('loginForm').addEventListener('submit', function(event) {
+    event.preventDefault(); // Предотвратить отправку формы по умолчанию
+
+    const login = document.getElementById('login').value;
+    const password = document.getElementById('password').value;
+
+    fetch('/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ login, password }),
+    })
+    .then(response => {
+        if (response.ok) {
+            window.location.reload()
+        } else {
+            alert('Неверный логин или пароль.');
+            throw new Error('Ошибка отправки данных на сервер');
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+    });
+});
+</script>
+<style>
+    .content {
+        flex: 1;
+    }
+
+    .login-form {
+        margin: 50px auto;
+        width: 300px;
+        padding: 15px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background: #f9f9f9;
+    }
+</style>
+
