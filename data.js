@@ -6,27 +6,30 @@ const coord = new sqlite3.Database('coord.db');
 function checkUser(login, password, callback) {
     users.get('SELECT * FROM users WHERE login = ? AND password = ?', [login, password], (err, row) => {
         if (err) {
-            callback(err, null);
-        } else {
-            callback(null, row);
+            console.error(err.message);
+            return;
         }
+
+        callback(row);
     });
 }
 
-function getAllCoord(callback) {
-    coord.all('SELECT * FROM coordinates', [], (err, rows) => {
+
+function getAllUserCoord(login, callback) {
+    users.get("SELECT id FROM users WHERE login = ?", [login], (err, row) => {
         if (err) {
-            callback(err, null);
-        } else {
+            console.error(err.message);
+            return;
+        }
+        users.all("SELECT x, y FROM coordinates WHERE id = ?", [row.id], (err, rows) => {
             let coords = []
             for (let i=0;i<rows.length;i++){
                 coords.push([parseFloat(rows[i].x), parseFloat(rows[i].y)])
             }
-            callback(null, coords);
-        }
-    });
+            callback(coords)
+        })
+    })
 }
 
 
-
-module.exports = { checkUser, getAllCoord };
+module.exports = { checkUser, getAllUserCoord };
