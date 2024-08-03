@@ -2,42 +2,176 @@
     <div id="map"></div>
 </div>
 <div class="button-container">
+    <a onclick="placemarksLast()" class="btn btn-success">Последняя метка</a>
+    <a onclick="placemarksLastWeek()" class="btn btn-primary">Метки за последнюю неделю</a>
+    <a onclick="placemarksLastMonth()" class="btn btn-primary">Метки за последний месяц</a>
+    <a onclick="placemarksAllTime()" class="btn btn-primary">Метки за всё время</a>
     <a href="/" class="btn btn-secondary">Назад</a>
 </div>
 
-
-
+<div class="container">
+    <div class="table-container">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Широта</th>
+                        <th>Долгота</th>
+                        <th>Дата метки</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each coords}}
+                        <tr id="{{this.[2]}}">
+                            {{#each this}}
+                                <td>{{this}}</td>
+                            {{/each}}
+                            <td><button class="btn btn-danger" onclick="removeCoord('{{this.[2]}}')">Удалить</button></td>
+                        </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
 <script src="https://api-maps.yandex.ru/2.1/?apikey=ad6de3ca-b0ff-402f-9c98-678f49588a8e&lang=ru_RU" type="text/javascript"></script>
 <script>
+    function removeCoord(id) {
+        const confirmed = confirm('Вы уверены, что хотите удалить метку?');
+        if (!confirmed){return}
+
+        const elementToRemove = document.getElementById(id);
+        elementToRemove.parentNode.removeChild(elementToRemove);
+
+        fetch('/map-delete', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify([id]),
+        })
+        .then(response => {
+            if (response.ok) {
+                window.location.reload()
+            } else {
+                alert('Не удалось.');
+                throw new Error('Ошибка отправки данных на сервер');
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+        });
+
+    }
+
     ymaps.ready(init);
 
+    let placemarks = []
+    let points = []
+    let myMap = NaN;
+
     function init() {
-        var myMap = new ymaps.Map("map", {
+        myMap = new ymaps.Map("map", {
             center: [55.751574, 37.573856], // Координаты центра карты (Москва)
             zoom: 10 // Масштаб карты
         });
 
         // Массив с координатами точек
-        var points = JSON.parse("{{coords}}")
+        points = JSON.parse(`{{{coords_str}}}`)
 
-        points.forEach(point => {
-            var placemark = new ymaps.Placemark(point, {}, {
+        for (let i=0;i<points.length;i++) {
+            var placemark = new ymaps.Placemark(points[i], {}, {
                 preset: 'islands#blueIcon' // Стиль метки
             });
             myMap.geoObjects.add(placemark);
-        });
+            placemarks.push([placemark, points[i][2]])
+        }
     }
+
+    function splitTimeString(timeString) {
+        const [time, date] = timeString.split(' ');
+        const [hours, minutes, seconds, milliseconds] = time.split(':');
+        const [day, month, year] = date.split('.');
+
+        return {
+            hours: parseInt(hours),
+            minutes: parseInt(minutes),
+            seconds: parseInt(seconds),
+            milliseconds: parseInt(milliseconds),
+            day: parseInt(day),
+            month: parseInt(month),
+            year: parseInt(year)
+        };
+    }
+
+    function placemarksLast() {
+        myMap.geoObjects.removeAll()
+        myMap.geoObjects.add(placemarks[placemarks.length-1][0]);
+        alert("Фильтр применён.")
+    }
+
+
+    function placemarksAllTime() {
+        myMap.geoObjects.removeAll()
+        for (let i=0;i<placemarks.length;i++) {
+            myMap.geoObjects.add(placemarks[i][0])
+        }
+        alert("Фильтр применён.")
+    }
+
+    function placemarksLastWeek() {
+        myMap.geoObjects.removeAll()
+        for (let i=0;i<placemarks.length;i++) {
+            placemark = placemarks[i]
+            let date = new Date()
+
+            placemark_days = splitTimeString(placemark[1]).day +splitTimeString(placemark[1]).month*30+splitTimeString(placemark[1]).year*365
+            today_days = date.getDate()+(date.getMonth()+1)*30+date.getFullYear()*365
+            if (today_days-placemark_days < 7) {
+                myMap.geoObjects.add(placemark[0]) 
+            }
+        }
+        alert("Фильтр применён.")
+    }
+    function placemarksLastMonth() {
+        myMap.geoObjects.removeAll()
+        for (let i=0;i<placemarks.length;i++) {
+            placemark = placemarks[i]
+            let date = new Date()
+
+            placemark_days = splitTimeString(placemark[1]).day +splitTimeString(placemark[1]).month*30+splitTimeString(placemark[1]).year*365
+            today_days = date.getDate()+(date.getMonth()+1)*30+date.getFullYear()*365
+            if (today_days-placemark_days < 30) {
+                myMap.geoObjects.add(placemark[0]) 
+            }
+        }
+        alert("Фильтр применён.")
+    }
+
 </script>
 
 <style>
+    .btn {
+        margin: 0 10px;
+    }
+
+    .table-container {
+        margin: 20px;
+    }
+
+    .table-responsive {
+        max-height: 400px;
+        overflow: auto;
+    }
     .map-block {
         margin-top: 20px;
         display: flex;
         justify-content: center;
     }
     #map {
-        width: 99vw;
+        width: 80vw;
         height: 75vh;
     }
 

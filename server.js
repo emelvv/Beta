@@ -7,7 +7,7 @@ const data = require("./data");
 const app = express();
 const port = 3000;
 
-app.use(bodyParser.text());
+app.use(bodyParser.json());
 app.use(session({
     secret: 'sosa', // Секретный ключ для подписи сессии
     resave: false, // Не сохранять сессию, если она не была изменена
@@ -40,12 +40,14 @@ app.post("/login", (req, res) => {
     });
 });
 
+
+
 app.get('/map', (req, res) => {
     if (isLogined(req)) {
 
         data.getAllUserCoord(req.session.username, (rows) => {
             if (rows) {
-                res.render("map", {title: "Beta | Карта", username: req.session.username, coords: JSON.stringify(rows)})
+                res.render("map", {title: "Beta | Карта", username: req.session.username, coords: rows, coords_str: JSON.stringify(rows)}) // кодирую потому что handlebars чёрт поганит строку
             }     
         });
     }else{
@@ -53,13 +55,35 @@ app.get('/map', (req, res) => {
     }
 })
 
-// ДОДЕЛАТЬ ВХОД ПО ПАРАМЕТРАМ ЛОГИН ПАРОЛЬ
+
 app.post('/map', (req, res) => {
     const currentDate = new Date();
-    const [ x, y ] = JSON.parse(req.body)
-    console.log(`New coordinates recieved: ${x}, ${y} at ${currentDate.getHours()}:${currentDate.getMinutes()} ${currentDate.getDay()}.${currentDate.getMonth()}.${currentDate.getFullYear()}`)
-    res.sendStatus(200)
+    const [ x, y, login, password ] = req.body
+
+    data.checkUser(login, password, (row) => {
+        if (row) {
+            const strdate = `${currentDate.getHours()}:${currentDate.getMinutes()}:${currentDate.getSeconds()}:${currentDate.getMilliseconds()} ${currentDate.getDate()}.${currentDate.getMonth()+1}.${currentDate.getFullYear()}`
+            
+            console.log(`New coordinates recieved from ${login}: ${x}, ${y} at ${strdate}`)
+            data.addNewUserCoord(login, x, y, strdate)
+            res.sendStatus(200); // Логин и пароль найдены
+        } else {
+            res.sendStatus(401); // Логин и/или пароль неверные
+        }
+    });
 })
+
+app.post('/map-delete', (req, res) => {
+    const [id] = req.body
+    if (req.session.username) {
+        data.deleteByDateCoord(id)
+        res.sendStatus(200);
+        return;
+    }
+    res.sendStatus(401);
+})
+
+
 
 app.get('/logout', (req, res) => {
     // Удаление сеанса пользователя
