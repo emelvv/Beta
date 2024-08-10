@@ -1,6 +1,8 @@
 const sqlite3 = require('sqlite3').verbose();
 
+
 const users = new sqlite3.Database('users.db');
+
 
 function checkUser(login, password, callback) {
     users.get('SELECT * FROM users WHERE login = ? AND password = ?', [login, password], (err, row) => {
