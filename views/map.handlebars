@@ -92,6 +92,11 @@
                 preset: 'islands#blueIcon' // Стиль метки
             });
             myMap.geoObjects.add(placemark);
+
+            placemark.events.add('click', function () {
+                alert(`Метка была создана ${points[i][2]}`)
+            });
+
             placemarks.push([placemark, points[i][2]])
         }
     }
