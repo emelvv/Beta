@@ -55,9 +55,17 @@ app.get('/map', (req, res) => {
     }
 })
 
+function createDate() {
+    const date = new Date();
+    const options = { timeZone: 'Europe/Moscow' };
+    const dateInTimeZone = new Date(date.toLocaleString('ru-RU', options));
+    return dateInTimeZone;
+}
+
+
 
 app.post('/map', (req, res) => {
-    const currentDate = new Date();
+    const currentDate = createDate();
     const [ x, y, login, password ] = req.body
 
     data.checkUser(login, password, (row) => {
