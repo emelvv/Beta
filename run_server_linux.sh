@@ -1,1 +1,1 @@
-pm2 start server.js --name Beta 
+pm2 start server.js --name Beta --log log.txt
