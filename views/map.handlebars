@@ -33,7 +33,10 @@
                             {{#each this}}
                                 <td>{{this}}</td>
                             {{/each}}
-                            <td><button class="btn btn-danger" onclick="removeCoord('{{this.[2]}}')">Удалить</button></td>
+                            <td>
+                                <button class="btn btn-danger" onclick="removeCoord('{{this.[2]}}')">Удалить</button>
+                                <button class="btn btn-primary" onclick="chooseCoord('{{this.[2]}}')">Выбрать</button>
+                            </td>
                         </tr>
                     {{/each}}
                 </tbody>
@@ -44,6 +47,33 @@
 
 <script src="https://api-maps.yandex.ru/2.1/?apikey=ad6de3ca-b0ff-402f-9c98-678f49588a8e&lang=ru_RU" type="text/javascript"></script>
 <script>
+    ymaps.ready(init);
+    let placemarks = []
+    let points = []
+    let myMap = NaN;
+
+
+
+    function createDate() {
+        const date = new Date();
+        const options = { timeZone: 'Europe/Moscow' };
+        const dateInTimeZone = new Date(date.toLocaleString('ru-RU', options));
+        return dateInTimeZone;
+    }
+
+    function chooseCoord(id) {
+        myMap.geoObjects.removeAll()
+        for (let i=0;i<placemarks.length;i++) {
+            placemark = placemarks[i]
+
+            if (placemark[1]==id) {
+                myMap.geoObjects.add(placemark[0]) 
+            }
+        }
+        alert("Метка выбрана.")
+    }
+
+
     function removeCoord(id) {
         const confirmed = confirm('Вы уверены, что хотите удалить метку?');
         if (!confirmed){return}
@@ -71,12 +101,6 @@
         });
 
     }
-
-    ymaps.ready(init);
-
-    let placemarks = []
-    let points = []
-    let myMap = NaN;
 
     function init() {
         myMap = new ymaps.Map("map", {
@@ -136,7 +160,7 @@
         myMap.geoObjects.removeAll()
         for (let i=0;i<placemarks.length;i++) {
             placemark = placemarks[i]
-            let date = new Date()
+            let date = createDate()
 
             placemark_days = splitTimeString(placemark[1]).day +splitTimeString(placemark[1]).month*30+splitTimeString(placemark[1]).year*365
             today_days = date.getDate()+(date.getMonth()+1)*30+date.getFullYear()*365
@@ -150,7 +174,7 @@
         myMap.geoObjects.removeAll()
         for (let i=0;i<placemarks.length;i++) {
             placemark = placemarks[i]
-            let date = new Date()
+            let date = createDate()
 
             placemark_days = splitTimeString(placemark[1]).day +splitTimeString(placemark[1]).month*30+splitTimeString(placemark[1]).year*365
             today_days = date.getDate()+(date.getMonth()+1)*30+date.getFullYear()*365
