@@ -1,6 +1,6 @@
 <div class="welcome-container">
     <h4 class="display-4">Карта меток</h4>
-    <p>Для добавления метки: curl -L 'http://87.251.79.83:3000/map' -H 'Content-Type: application/json' -d '[42.5,46.1,"YOUR_LOGIN","YOUR_PASSWORD"]'</p>
+    <p>Для добавления метки: curl -L 'http://{{ip}}/map' -H 'Content-Type: application/json' -d '[42.5,46.1,"YOUR_LOGIN","YOUR_PASSWORD"]'</p>
 </div>
 
 
@@ -45,7 +45,7 @@
     </div>
 </div>
 
-<script src="https://api-maps.yandex.ru/2.1/?apikey=ad6de3ca-b0ff-402f-9c98-678f49588a8e&lang=ru_RU" type="text/javascript"></script>
+<script src="{{api}}" type="text/javascript"></script>
 <script>
     ymaps.ready(init);
     let placemarks = []

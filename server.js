@@ -1,4 +1,6 @@
 const express = require("express");
+const vars = require('./vars.js');
+const os = require('os');
 const bodyParser = require("body-parser");
 const handlebars = require('express-handlebars');
 const path = require("path");
@@ -6,6 +8,9 @@ const session = require('express-session');
 const data = require("./data");
 const app = express();
 const port = 3000;
+
+
+
 
 app.use(bodyParser.json());
 app.use(session({
@@ -47,7 +52,7 @@ app.get('/map', (req, res) => {
 
         data.getAllUserCoord(req.session.username, (rows) => {
             if (rows) {
-                res.render("map", {title: "Beta | Карта", username: req.session.username, coords: rows, coords_str: JSON.stringify(rows)}) // кодирую потому что handlebars чёрт поганит строку
+                res.render("map", {title: "Beta | Карта", api: vars.YANDEXKEY, ip: vars.IP, username: req.session.username, coords: rows, coords_str: JSON.stringify(rows)}) // кодирую потому что handlebars чёрт поганит строку
             }     
         });
     }else{
@@ -105,7 +110,23 @@ app.get('/logout', (req, res) => {
     });
 });
 
+async function getIPAddress() {
+    try {
+        const response = await fetch('https://api.ipify.org?format=json');
+        const data = await response.json();
+        
+        return data.ip;
+    } catch (error) {
+        console.error('Произошла ошибка:', error);
+        return null;
+    }
+}
 
+if (!vars.IP){
+    getIPAddress()
+        .then(ipAddress => {vars.IP=ipAddress})
+        .catch(error => console.error('Произошла ошибка:', error));
+}
 
 app.listen(port, () => {
     console.log(`Port: ${port}`);
