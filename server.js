@@ -4,6 +4,7 @@ const os = require('os');
 const bodyParser = require("body-parser");
 const handlebars = require('express-handlebars');
 const path = require("path");
+const moment = require('moment-timezone');
 const session = require('express-session');
 const data = require("./data");
 const app = express();
@@ -60,25 +61,16 @@ app.get('/map', (req, res) => {
     }
 })
 
-function createDate() {
-    const date = new Date();
-    const options = { timeZone: 'Europe/Moscow' };
-    const dateInTimeZone = new Date(date.toLocaleString('ru-RU', options));
-    return dateInTimeZone;
-}
-
 
 
 app.post('/map', (req, res) => {
-    const currentDate = createDate();
+    const currentDate = moment().tz('Europe/Moscow').format('HH:mm:ss DD-MM-YYYY');;
     const [ x, y, login, password ] = req.body
 
     data.checkUser(login, password, (row) => {
         if (row) {
-            const strdate = `${currentDate.getHours()}:${currentDate.getMinutes()}:${currentDate.getSeconds()}:${currentDate.getMilliseconds()} ${currentDate.getDate()}.${currentDate.getMonth()+1}.${currentDate.getFullYear()}`
-            
-            console.log(`New coordinates recieved from ${login}: ${x}, ${y} at ${strdate}`)
-            data.addNewUserCoord(login, x, y, strdate)
+            console.log(`New coordinates recieved from ${login}: ${x}, ${y} at ${currentDate}`)
+            data.addNewUserCoord(login, x, y, currentDate)
             res.sendStatus(200); // Логин и пароль найдены
         } else {
             res.sendStatus(401); // Логин и/или пароль неверные
