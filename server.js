@@ -8,7 +8,6 @@ const moment = require('moment-timezone');
 const session = require('express-session');
 const data = require("./data");
 const app = express();
-const port = 3000;
 
 
 
@@ -120,6 +119,6 @@ if (!vars.IP){
         .catch(error => console.error('Произошла ошибка:', error));
 }
 
-app.listen(port, () => {
-    console.log(`Port: ${port}`);
+app.listen(vars.PORT, () => {
+    console.log(`Port: ${vars.PORT}`);
 });
