@@ -7,6 +7,7 @@ PORT = 80
 
 module.exports = {
     YANDEXKEY,
-    IP
+    IP,
+    PORT
 };
 
